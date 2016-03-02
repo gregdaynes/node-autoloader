@@ -1,12 +1,12 @@
 {
-  "name": "autoload",
+  "name": "tiny-load",
   "version": "1.0.0",
-  "description": "",
+  "description": "A very small autoloader for Nodejs with Components in mind.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_PATH=./ DEBUG=* nodemon index.js"
   },
   "author": "@gregdaynes",
-  "license": "MIT",
+  "license": "MIT"
 }
