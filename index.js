@@ -6,31 +6,6 @@ const path = require('path');
 
 // Module =====================
 
-/**
- * Auto Loading
- * returns object of functions
- * use
-     // component loader
-     var user = require('./index')('user');
-     var userHelper = user.helpers();
-     var userRoutes = require('./index')('user').routes();
-
-     var loader = require('./index');
-     var fruitHelper = loader('components/fruit').helpers();
-     var fruitRoute = loader('components/fruit').routes();
-
-     // Global loader
-     var routesFruit = require('./index')(true, 'routes.js').fruit();
-     var routesUser = require('./index')(true, 'routes.js').user();
-
-
-     var a = userHelper.stuff();
-     var b = userRoutes.test('yellow', 'banana');
-     var c = fruitHelper.color('red');
-     var d = fruitRoute.test('orange', 'orange');
-     var e = routesFruit.test('green', 'lime');
-     var f = routesUser.test('red', 'apple');
- */
 module.exports = function(type, name, extension) {
     if (type !== true) {
         name = type;
@@ -52,6 +27,7 @@ module.exports = function(type, name, extension) {
 }
 
 // Internal functions =========
+
 function decider(name, extension, type) {
     let srcpath = (type === true)
         ? `${__dirname}/${path.dirname(name)}`
@@ -66,6 +42,8 @@ function decider(name, extension, type) {
         return getDirectory(name, extension);
     }
 }
+
+// Load based on component
 
 function getDirectory(name, extension) {
     let srcpath = `${__dirname}/${name}`;
@@ -85,6 +63,8 @@ function getDirectory(name, extension) {
 
     return files;
 }
+
+// Load based on filename
 
 function findFiles(srcpath, filename) {
     const foundFiles = [];
@@ -108,3 +88,5 @@ function findInDir(startPath, filter, callback) {
             if (filter === path.basename(filename)) callback(filename);
     });
 };
+
+// Load based on folder
