@@ -8,5 +8,10 @@
     "start": "NODE_PATH=./ DEBUG=*,-nodemon nodemon demo.js"
   },
   "author": "@gregdaynes",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "debug": "^2.2.0",
+    "eslint": "^2.2.0",
+    "eslint-config-airbnb": "^6.0.2"
+  }
 }

@@ -7,12 +7,7 @@ const path = require('path');
 // Module =====================
 
 module.exports = function(type, name, extension) {
-    if (type !== true) {
-        name = type;
-        type = false;
-    }
-
-    const files = decider(name, extension, type);
+    const files = decider(type, name, extension);
     const models = {};
 
     files.forEach(file => {
@@ -20,27 +15,41 @@ module.exports = function(type, name, extension) {
         if (type === true) moduleName = path.basename(path.dirname(file));
         models[moduleName] = () => {
             return require(file);
-        }
+        };
     });
 
     return models;
-}
+};
 
 // Internal functions =========
 
-function decider(name, extension, type) {
-    let srcpath = (type === true)
+function decider(type, name, extension) {
+    switch (type) {
+        case 'type':
+            break;
+
+        case 'folder':
+            break;
+
+        default:
+            break;
+    }
+
+    if (type !== true) {
+        name = type;
+        type = false;
+    }
+
+    const srcpath = (type === true)
         ? `${__dirname}/${path.dirname(name)}`
         : `${__dirname}/${name}`;
 
-    if (fs.statSync(path.join(srcpath)).isDirectory() === false)
+    if (fs.statSync(path.join(srcpath)).isDirectory() === false) {
         throw new Error('path is not a directory.');
-
-    if (type === true) {
-        return findFiles(srcpath, path.basename(name));
-    } else {
-        return getDirectory(name, extension);
     }
+
+    if (type === true) return findFiles(srcpath, path.basename(name));
+    return getDirectory(name, extension);
 }
 
 // Load based on component

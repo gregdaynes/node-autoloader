@@ -60,3 +60,9 @@ var routesFruit = routes.fruit();
 routesUser.fn(params);
 routesFruit.fn(params);
 ```
+
+# Todo
+
+- [ ] Tests. We all need and love them.
+- [ ] Folder based loading
+- [ ] Organize dev content into test content
