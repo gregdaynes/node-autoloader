@@ -30,20 +30,20 @@ function decider(type, name, extension) {
 
     switch (type) {
         case 'type':
-            srcpath = `${__dirname}/${path.dirname(name)}`;
+            srcpath = `${__dirname}/../../${path.dirname(name)}`;
             files = findFiles(srcpath, path.basename(name));
             break;
 
         case 'folder':
             name = (path.dirname(name) === '.') ? `${name}` : name;
-            srcpath = `${__dirname}/${name}`;
+            srcpath = `${__dirname}/../../${name}`;
             files = findFilesInFolder(srcpath);
             break;
 
         default:
             name = type;
             type = false;
-            srcpath = `${__dirname}/${name}`;
+            srcpath = `${__dirname}/../../${name}`;
             files = getDirectory(name, extension);
             break;
     }
