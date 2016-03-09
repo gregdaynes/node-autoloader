@@ -1,6 +1,6 @@
 {
   "name": "tiny-load",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A very small autoloader for Nodejs with Components in mind.",
   "main": "index.js",
   "scripts": {
