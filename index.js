@@ -8,16 +8,19 @@ const path = require('path');
 
 module.exports = (type, name, extension) => {
     const files = decider(type, name, extension);
-    const models = {};
+    const models = { paths: {}};
 
+    console.log(files);
     files.forEach(file => {
         let moduleName = path.basename(file, path.extname(file));
         if (type === 'type') {
             moduleName = path.basename(path.dirname(file));
         }
+        models.paths[moduleName] = file;
         models[moduleName] = () => {
             return require(file);
         };
+
     });
     return models;
 };
@@ -27,24 +30,27 @@ module.exports = (type, name, extension) => {
 function decider(type, name, extension) {
     let srcpath;
     let files;
+    const dirname = (module.parent !== 'undefined') ? path.dirname(module.parent.filename) : __dirname;
+    const basepath = (process.env.NODE_PATH !== 'undefined') ? dirname : process.env.NODE_PATH;
+
 
     switch (type) {
         case 'type':
-            srcpath = `${__dirname}/../../${path.dirname(name)}`;
+            srcpath = `${basepath}/${path.dirname(name)}`;
             files = findFiles(srcpath, path.basename(name));
             break;
 
         case 'folder':
             name = (path.dirname(name) === '.') ? `${name}` : name;
-            srcpath = `${__dirname}/../../${name}`;
+            srcpath = `${basepath}/${name}`;
             files = findFilesInFolder(srcpath);
             break;
 
         default:
             name = type;
             type = false;
-            srcpath = `${__dirname}/../../${name}`;
-            files = getDirectory(name, extension);
+            srcpath = `${basepath}/${name}`;
+            files = getDirectory(srcpath, extension);
             break;
     }
 
@@ -57,9 +63,8 @@ function decider(type, name, extension) {
 
 // Load based on component
 
-function getDirectory(name, extension) {
-    const srcpath = `${__dirname}/${name}`;
-
+function getDirectory(srcpath, extension) {
+    const name = path.basename(srcpath);
     const files = fs.readdirSync(srcpath);
     files.forEach((file, index) => {
         const filename = file.split('.');

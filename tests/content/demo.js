@@ -9,13 +9,14 @@ logFull('start');
 
 // component loader
 log('component');
-const user = require('../../index.js')('tests/content/user');
+const user = require('../../index.js')('user');
 const userHelper = user.helpers();
-const userRoutes = require('../../index.js')('tests/content/user').routes();
+const userRoutes = require('../../index.js')('user').routes();
 
 const loader = require('../../index.js');
-const fruitHelper = loader('tests/content/components/fruit').helpers();
-const fruitRoute = loader('tests/content/components/fruit').routes();
+const fruitHelper = loader('components/fruit').helpers();
+const fruitRoute = loader('components/fruit').routes();
+const notatest = loader('../not-a-test');
 log('/component');
 
 // Global loader
@@ -23,11 +24,12 @@ log('global');
 const routes = require('../../index.js')('type', 'routes.js');
 const routesFruit = routes.fruit();
 const routesUser = require('../../index.js')('type', 'routes.js').user();
+const routesTest = require('../../index.js')('type', '../routes.js');
 log('/global');
 
 // Folder loader
 log('folder');
-const folder = require('../../index.js')('folder', 'tests/content/routes');
+const folder = require('../../index.js')('folder', 'routes');
 const folderFruit = folder.fruit();
 log('/folder');
 
