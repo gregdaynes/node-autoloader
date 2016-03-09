@@ -10,7 +10,6 @@ module.exports = (type, name, extension) => {
     const files = decider(type, name, extension);
     const models = { paths: {}};
 
-    console.log(files);
     files.forEach(file => {
         let moduleName = path.basename(file, path.extname(file));
         if (type === 'type') {
