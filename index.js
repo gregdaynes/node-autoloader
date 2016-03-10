@@ -104,6 +104,8 @@ function getDirectory(srcpath, extension) {
 }
 
 function walk(dir) {
+    if (path.basename(dir) === 'node_modules'
+       || path.basename(dir) === '.git') return;
     let results = [];
     const list = fs.readdirSync(dir);
     list.forEach(function(file) {
