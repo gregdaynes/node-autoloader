@@ -5,26 +5,47 @@ const fs = require('fs');
 const path = require('path');
 
 // Module =====================
+let globalType;
 
 module.exports = (type, name, extension) => {
     const files = decider(type, name, extension);
-    const models = { paths: {}};
-
-    files.forEach(file => {
-        let moduleName = path.basename(file, path.extname(file));
-        if (type === 'type') {
-            moduleName = path.basename(path.dirname(file));
-        }
-        models.paths[moduleName] = file;
-        models[moduleName] = () => {
-            return require(file);
-        };
-
-    });
-    return models;
+    files.forEach(constructor, files);
+    const filesReduced = files.reduce(reductor, { paths: {} });
+    return filesReduced;
 };
 
 // Internal functions =========
+
+function constructor(file, index, arr) {
+    const model = { paths: {}};
+    let moduleName = path.basename(file, path.extname(file));
+    if (globalType === 'type') moduleName = path.basename(path.dirname(file));
+    if (path.basename(file, path.extname(file)) === 'index') {
+        model.paths.component = file;
+        model.component = () => {
+            return require(file);
+        };
+    }
+    model.paths[moduleName] = file;
+    model[moduleName] = () => {
+        return require(file);
+    };
+    arr[index] = model;
+}
+
+function reductor(acc, item, index, arr) {
+    Object.keys(item).forEach(name => {
+        if (name === 'paths') {
+            Object.keys(item[name]).forEach(pathName => {
+                acc.paths[pathName] = item.paths[pathName];
+            });
+        } else {
+            acc[name] = item[name];
+        }
+    });
+
+    return acc;
+}
 
 function decider(type, name, extension) {
     let srcpath;
@@ -32,14 +53,15 @@ function decider(type, name, extension) {
     const dirname = (module.parent !== 'undefined') ? path.dirname(module.parent.filename) : __dirname;
     const basepath = (process.env.NODE_PATH !== 'undefined') ? dirname : process.env.NODE_PATH;
 
-
     switch (type) {
         case 'type':
+            globalType = 'type'
             srcpath = `${basepath}/${path.dirname(name)}`;
             files = findFiles(srcpath, path.basename(name));
             break;
 
         case 'folder':
+            globalType = 'folder'
             name = (path.dirname(name) === '.') ? `${name}` : name;
             srcpath = `${basepath}/${name}`;
             files = findFilesInFolder(srcpath);
@@ -48,6 +70,7 @@ function decider(type, name, extension) {
         default:
             name = type;
             type = false;
+            globalType = false;
             srcpath = `${basepath}/${name}`;
             files = getDirectory(srcpath, extension);
             break;
