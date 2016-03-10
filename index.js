@@ -66,7 +66,9 @@ function buildComponents(objects) {
                     readyComponents.paths = {};
                 }
 
-                readyComponents[moduleName][componentName] = modules[moduleName];
+                readyComponents[moduleName][componentName] = () => {
+                    return require(modules[moduleName]);
+                }
                 readyComponents.paths[componentName] = modules[moduleName];
             } else {
                 component.paths[moduleName] = modules[moduleName];
@@ -79,7 +81,7 @@ function buildComponents(objects) {
         if (mode !== 'filter') readyComponents[componentName] = component;
     });
 
-    if (Object.keys(readyComponents).length === 1) {
+    if (Object.keys(readyComponents).length === 2) {
         const single = Object.keys(readyComponents)[0];
         return readyComponents[single];
     }
