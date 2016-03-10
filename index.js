@@ -5,143 +5,112 @@ const fs = require('fs');
 const path = require('path');
 
 // Module =====================
-let globalType;
 
-module.exports = (type, name, extension) => {
-    const files = decider(type, name, extension);
-    files.forEach(constructor, files);
-    const filesReduced = files.reduce(reductor, { paths: {} });
-    return filesReduced;
+module.exports = (mode, name) => {
+    const components = findFiles(mode, name);
+    return buildComponents(components);
 };
 
 // Internal functions =========
 
-function constructor(file, index, arr) {
-    const model = { paths: {}};
-    let moduleName = path.basename(file, path.extname(file));
-    if (globalType === 'type') moduleName = path.basename(path.dirname(file));
-    if (path.basename(file, path.extname(file)) === 'index') {
-        model.paths.component = file;
-        model.component = () => {
-            return require(file);
-        };
-    }
-    model.paths[moduleName] = file;
-    model[moduleName] = () => {
-        return require(file);
-    };
-    arr[index] = model;
-}
-
-function reductor(acc, item, index, arr) {
-    Object.keys(item).forEach(name => {
-        if (name === 'paths') {
-            Object.keys(item[name]).forEach(pathName => {
-                acc.paths[pathName] = item.paths[pathName];
-            });
-        } else {
-            acc[name] = item[name];
-        }
-    });
-
-    return acc;
-}
-
-function decider(type, name, extension) {
-    let srcpath;
-    let files;
+function findFiles(mode, name) {
     const dirname = (module.parent !== 'undefined') ? path.dirname(module.parent.filename) : __dirname;
     const basepath = (process.env.NODE_PATH !== 'undefined') ? dirname : process.env.NODE_PATH;
+    if (typeof name === 'undefined') name = mode;
+    let searchpath = `${basepath}/${mode}`;
 
-    switch (type) {
-        case 'type':
-            globalType = 'type'
-            srcpath = `${basepath}/${path.dirname(name)}`;
-            files = findFiles(srcpath, path.basename(name));
-            break;
+    if (name.split('.').length > 1) searchpath = path.dirname(searchpath);
 
-        case 'folder':
-            globalType = 'folder'
-            name = (path.dirname(name) === '.') ? `${name}` : name;
-            srcpath = `${basepath}/${name}`;
-            files = findFilesInFolder(srcpath);
-            break;
+    let files = getDirectory(searchpath);
+    if (mode === 'filter') files = filterFiles(files, path.basename(name, path.extname(name)));
 
-        default:
-            name = type;
-            type = false;
-            globalType = false;
-            srcpath = `${basepath}/${name}`;
-            files = getDirectory(srcpath, extension);
-            break;
+    return { files, mode };
+}
+
+function filterFiles(components, name) {
+    Object.keys(components).forEach(componentName => {
+        const component = components[componentName];
+        if (typeof component[name] === 'undefined') {
+            delete components[componentName];
+        } else {
+            Object.keys(component).forEach(moduleName => {
+                if (moduleName !== name) {
+                    delete components[componentName][moduleName];
+                }
+            });
+        }
+    });
+    return components;
+}
+
+function buildComponents(objects) {
+    if (typeof objects === 'undefined') return;
+    const components = objects.files;
+    const mode = objects.mode;
+    const readyComponents = {};
+
+    Object.keys(components).forEach(componentName => {
+        const component = {paths: {}};
+        const modules = components[componentName];
+        Object.keys(modules).forEach(moduleName => {
+            if (moduleName === 'index') {
+                component.paths.component = modules[moduleName];
+                component.component = () => {
+                    return require(modules[moduleName]);
+                };
+            }
+
+            if (mode === 'filter') {
+                if (typeof readyComponents[moduleName] === 'undefined') {
+                    readyComponents[moduleName] = {};
+                    readyComponents.paths = {};
+                }
+
+                readyComponents[moduleName][componentName] = modules[moduleName];
+                readyComponents.paths[componentName] = modules[moduleName];
+            } else {
+                component.paths[moduleName] = modules[moduleName];
+                component[moduleName] = () => {
+                    return require(modules[moduleName]);
+                };
+            }
+        });
+
+        if (mode !== 'filter') readyComponents[componentName] = component;
+    });
+
+    if (Object.keys(readyComponents).length === 1) {
+        const single = Object.keys(readyComponents)[0];
+        return readyComponents[single];
     }
 
-    if (fs.statSync(path.join(srcpath)).isDirectory() === false) {
-        throw new Error('path is not a directory.');
-    }
-
-    return files;
+    return readyComponents;
 }
 
 // Load based on component
-
 function getDirectory(srcpath, extension) {
+    const files = walk(srcpath);
     const name = path.basename(srcpath);
-    const files = fs.readdirSync(srcpath);
-    files.forEach((file, index) => {
-        const filename = file.split('.');
-        if (typeof extension === 'undefined') {
-            extension = filename[filename.length - 1];
+    const modules = {};
+    files.forEach(fullPath => {
+        const componentName = path.basename(path.dirname(fullPath));
+        const filename = path.basename(fullPath, path.extname(fullPath));
+        if (typeof modules[componentName] === 'undefined') {
+            modules[componentName] = {};
         }
-        files[index] = filename.reduce((acc, item) => {
-            if (item !== name && item !== extension) {
-                const newPath = `${srcpath}/${item}`;
-                acc = acc + newPath;
-            }
-            return acc;
-        }, []);
+        modules[componentName][filename] = fullPath;
     });
-
-    return files;
+    return modules;
 }
 
-// Load based on filename
-
-function findFiles(srcpath, filename) {
-    const foundFiles = [];
-    findInDir(srcpath, filename, (filepath) => {
-        foundFiles.push(filepath);
-    });
-    return foundFiles;
-}
-
-function findInDir(startPath, filter, callback) {
-    if (!fs.existsSync(startPath)) return;
-
-    const ignores = ['node_modules', '.git'];
-    const folderName = path.basename(path.dirname(startPath));
-    if (ignores.indexOf(folderName) > -1) return;
-
-    const files = fs.readdirSync(startPath);
-    files.forEach(file => {
-        const filename = path.join(startPath, file);
-        const stat = fs.lstatSync(filename);
-        if (stat.isDirectory()) {
-            findInDir(filename, filter, callback);
-        } else {
-            if (filter === path.basename(filename)) callback(filename);
-        }
-    });
-}
-
-// Load based on folder
-
-function findFilesInFolder(srcpath) {
-    const files = fs.readdirSync(srcpath);
-
-    files.forEach((file, index) => {
-        files[index] = `${srcpath}/${file}`;
-    });
-
-    return files;
+function walk(dir) {
+    let results = [];
+    const list = fs.readdirSync(dir);
+    list.forEach(function(file) {
+        file = dir + '/' + file;
+        const stat = fs.statSync(file);
+        if (stat && stat.isDirectory()) results = results.concat(walk(file));
+        else results.push(file)
+    })
+    return results
 }
