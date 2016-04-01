@@ -8,7 +8,8 @@ const path = require('path');
 
 module.exports = (mode, name) => {
     const components = findFiles(mode, name);
-    return buildComponents(components);
+    const builtComponents = buildComponents(components);
+    return flattenComponents(builtComponents);
 };
 
 // Internal functions =========
@@ -81,12 +82,27 @@ function buildComponents(objects) {
         if (mode !== 'filter') readyComponents[componentName] = component;
     });
 
-    if (Object.keys(readyComponents).length === 2) {
-        const single = Object.keys(readyComponents)[0];
-        return readyComponents[single];
+    return readyComponents;
+}
+
+function flattenComponents(components) {
+    const componentNames = Object.keys(components);
+    componentNames.forEach((name, index) => {
+        if (name === 'paths' || name === 'component' || name === 'index') {
+            componentNames.splice(index, 1);
+        }
+    });
+
+    if (componentNames.length === 1) {
+        const flattenedComponents = {};
+        Object.keys(components[componentNames[0]]).forEach(componentName => {
+            flattenedComponents[componentName] = components[componentNames[0]][componentName];
+        });
+        flattenedComponents.paths = components.paths;
+        return flattenedComponents;
     }
 
-    return readyComponents;
+    return components;
 }
 
 // Load based on component
