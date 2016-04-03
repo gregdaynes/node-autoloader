@@ -31,15 +31,11 @@ function findFiles(mode, name) {
 function filterFiles(components, name) {
     Object.keys(components).forEach(componentName => {
         const component = components[componentName];
-        if (typeof component[name] === 'undefined') {
+        Object.keys(component).forEach(fileName => {
+            if (fileName.indexOf(name) === -1) {
             delete components[componentName];
-        } else {
-            Object.keys(component).forEach(moduleName => {
-                if (moduleName !== name) {
-                    delete components[componentName][moduleName];
                 }
             });
-        }
     });
     return components;
 }
