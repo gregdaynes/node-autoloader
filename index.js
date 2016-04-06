@@ -33,9 +33,9 @@ function filterFiles(components, name) {
         const component = components[componentName];
         Object.keys(component).forEach(fileName => {
             if (fileName.indexOf(name) === -1) {
-            delete components[componentName];
-                }
-            });
+                delete components[componentName][fileName];
+            }
+        });
     });
     return components;
 }
