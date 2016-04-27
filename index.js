@@ -15,7 +15,9 @@ module.exports = (mode, name) => {
 // Internal functions =========
 
 function findFiles(mode, name) {
-    const dirname = (module.parent !== 'undefined') ? path.dirname(module.parent.filename) : __dirname;
+    const dirname = (module.parent !== 'undefined')
+        ? path.dirname(module.parent.filename)
+        : __dirname;
     const basepath = (process.env.NODE_PATH !== 'undefined') ? dirname : process.env.NODE_PATH;
     if (typeof name === 'undefined') name = mode;
     let searchpath = `${basepath}/${mode}`;
@@ -40,8 +42,20 @@ function filterFiles(components, name) {
     return components;
 }
 
+function reduceFiles(components) {
+    Object.keys(components).forEach(ComponentKey => {
+        const component = components[ComponentKey];
+        const componentKeys = Object.keys(component);
+        if (componentKeys.length > 0) {
+            const splitName = ComponentKey.split('.');
+            components[splitName[0]] = components[ComponentKey][splitName[0]];
+        }
+    });
+    return components;
+}
+
 function buildComponents(objects) {
-    if (typeof objects === 'undefined') return;
+    if (typeof objects === 'undefined') return objects;
     const components = objects.files;
     const mode = objects.mode;
     const readyComponents = {};
@@ -52,9 +66,7 @@ function buildComponents(objects) {
         Object.keys(modules).forEach(moduleName => {
             if (moduleName === 'index') {
                 component.paths.component = modules[moduleName];
-                component.component = () => {
-                    return require(modules[moduleName]);
-                };
+                component.component = () => require(modules[moduleName]);
             }
 
             if (mode === 'filter') {
@@ -63,15 +75,11 @@ function buildComponents(objects) {
                     readyComponents.paths = {};
                 }
 
-                readyComponents[moduleName][componentName] = () => {
-                    return require(modules[moduleName]);
-                }
+                readyComponents[moduleName][componentName] = () => require(modules[moduleName]);
                 readyComponents.paths[componentName] = modules[moduleName];
             } else {
                 component.paths[moduleName] = modules[moduleName];
-                component[moduleName] = () => {
-                    return require(modules[moduleName]);
-                };
+                component[moduleName] = () => require(modules[moduleName]);
             }
         });
 
@@ -98,13 +106,14 @@ function flattenComponents(components) {
         return flattenedComponents;
     }
 
+    components = reduceFiles(components);
+
     return components;
 }
 
 // Load based on component
-function getDirectory(srcpath, extension) {
+function getDirectory(srcpath) {
     const files = walk(srcpath);
-    const name = path.basename(srcpath);
     const modules = {};
     files.forEach(fullPath => {
         const componentName = path.basename(path.dirname(fullPath));
@@ -119,14 +128,14 @@ function getDirectory(srcpath, extension) {
 
 function walk(dir) {
     if (path.basename(dir) === 'node_modules'
-       || path.basename(dir) === '.git') return;
+       || path.basename(dir) === '.git') return null;
     let results = [];
     const list = fs.readdirSync(dir);
-    list.forEach(function(file) {
-        file = dir + '/' + file;
+    list.forEach(file => {
+        file = `${dir}/${file}`;
         const stat = fs.statSync(file);
         if (stat && stat.isDirectory()) results = results.concat(walk(file));
-        else results.push(file)
-    })
-    return results
+        else results.push(file);
+    });
+    return results;
 }
