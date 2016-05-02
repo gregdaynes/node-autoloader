@@ -2,12 +2,11 @@
   "name": "tiny-load",
   "version": "2.4.0",
   "description": "A very small autoloader for Nodejs with Components in mind.",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "DEBUG=*,-nodemon nodemon tests/content/demo.js"
+    "test": "mocha test/ -w"
   },
-  "author": "@gregdaynes",
+  "author": "gregdaynes",
   "license": "MIT",
   "devDependencies": {
     "debug": "^2.2.0",
