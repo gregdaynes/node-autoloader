@@ -5,8 +5,8 @@
 // dependencies ===============
 const expect = require('chai').expect;
 const path = require('path');
-const walk = require('./index.js');
-const dir = '../../mocks';
+const walk = require(`${__dirname}/index.js`);
+const dir = `${__dirname}/../../mocks`;
 
 describe('walk', () => {
     it('return an array', () => (walk(dir).isArray));

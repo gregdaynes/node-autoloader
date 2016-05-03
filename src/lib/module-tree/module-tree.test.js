@@ -4,9 +4,8 @@
 
 // dependencies ===============
 const expect = require('chai').expect;
-// const path = require('path');
-const moduleTree = require('./index.js');
-const dir = '../../mocks';
+const moduleTree = require(`${__dirname}/index.js`);
+const dir = `${__dirname}/../../mocks`;
 
 describe('module-tree', () => {
     it('should be an object', () => {

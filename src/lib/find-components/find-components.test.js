@@ -4,8 +4,8 @@
 
 // dependencies ===============
 const expect = require('chai').expect;
-const findComponents = require('./index.js');
-const dir = '../../mocks';
+const findComponents = require(`${__dirname}/index.js`);
+const dir = `${__dirname}/../../mocks`;
 
 describe('find-components', () => {
     it('should return an object', () => {

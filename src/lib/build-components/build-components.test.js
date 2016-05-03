@@ -4,7 +4,8 @@
 
 // dependencies ===============
 const expect = require('chai').expect;
-const buildComponents = require('./index.js');
+const buildComponents = require(`${__dirname}/index.js`);
+
 const components = {
     files: {
         'component-one': {

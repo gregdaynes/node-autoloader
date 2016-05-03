@@ -4,7 +4,7 @@
 
 // dependencies ===============
 const expect = require('chai').expect;
-const filterFiles = require('./index.js');
+const filterFiles = require(`${__dirname}/index.js`);
 const components = {
     'component-one': {
         index: '../../mocks/component-one/index.js',
