@@ -3,7 +3,7 @@
 module.exports = (objects) => {
     if (typeof objects === 'undefined') return objects;
     const components = objects.files;
-    const mode = objects.mode;
+    const mode = objects.findBy;
     const readyComponents = {};
 
     Object.keys(components).forEach(componentName => {
