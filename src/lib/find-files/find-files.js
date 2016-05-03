@@ -9,7 +9,7 @@
 
 // dependencies ===============
 const path = require('path');
-const getDirectory = require('../module-tree');
+const moduleTree = require('../module-tree');
 const filterFiles = require('../filter-files');
 
 // @TODO reduce statement count;
@@ -44,7 +44,7 @@ module.exports = (findBy, pattern, findLocation) => {
         findLocation = path.dirname(findLocation);
     }
 
-    files = getDirectory(findLocation);
+    files = moduleTree(findLocation);
 
     if (findBy === 'filter') {
         files = filterFiles(files, path.basename(pattern, path.extname(pattern)));

@@ -1,18 +1,16 @@
 'use strict';
 
-/**
- * 
- */
-
 module.exports = (components, name) => {
-    console.log(components, name);
+    const filteredComponents = {};
     Object.keys(components).forEach(componentName => {
         const component = components[componentName];
-        Object.keys(component).forEach(fileName => {
-            if (fileName.indexOf(name) === -1) {
-                delete components[componentName][fileName];
+        filteredComponents[componentName] = {};
+
+        Object.keys(component).forEach(moduleName => {
+            if (moduleName.indexOf(name) !== -1) {
+                filteredComponents[componentName][moduleName] = components[componentName][moduleName];
             }
         });
     });
-    return components;
+    return filteredComponents;
 };
